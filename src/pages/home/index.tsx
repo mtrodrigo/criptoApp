@@ -1,14 +1,84 @@
 import styles from './home.module.css'
 import { PiMagnifyingGlass } from "react-icons/pi";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, FormEvent, useEffect } from 'react';
+
+interface CoinProps{
+    id: string
+    name: string
+    symbol: string
+    vwap24Hr: string
+    priceUsd: string
+    changePercent24Hr: string
+    rank: string
+    supply: string
+    maxSupply: string
+    marketCapUsd: string
+    volumeUsd24Hr: string
+    explorer: string
+    formatedPrice?: string
+    formatedMarket?: string
+    formatedVolume?: string
+}
+interface DataProps{
+    data: CoinProps[]
+}
 
 export function Home(){
+
+    const [input, setInput] = useState("")
+    const [coins, setCoins] = useState<CoinProps[]>([])
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        getData()
+    },[])
+    async function getData() {
+        fetch("https://api.coincap.io/v2/assets?limit=10&offset=0")
+        .then(respose => respose.json())
+        .then((data: DataProps) =>{
+            const coinsData = data.data
+           
+            const price = Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD"
+            }) 
+            const priceCompact = Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: "USD",
+                notation: "compact"
+            }) 
+        
+            const formatedResult = coinsData.map((item) => {
+                const formated = {
+                    ...item,
+                    formatedPrice: price.format(Number(item.priceUsd)),
+                    formatedMarket: priceCompact.format(Number(item.marketCapUsd)),
+                    formatedVolume: priceCompact.format(Number(item.volumeUsd24Hr))
+                }
+                return formated;
+            })
+            setCoins(formatedResult);
+            
+        })
+    }
+    const handleSubmit = (e: FormEvent) =>{
+        e.preventDefault();
+        if(input === "") return;
+        navigate(`/datail/${input}`)
+    }
+    const handleGetMore = () =>{
+        alert("To aqui!!!")
+    }
+
     return(
         <main className={styles.main}>
-            <form className={styles.form}>
+            <form className={styles.form} onSubmit={handleSubmit}>
                 <input 
                     type="text" 
                     placeholder='Pesquise a criptomoeda...'
+                    value={input}
+                    onChange={ (e) => setInput(e.target.value)}
                 />
                 <button type='submit'>
                     <PiMagnifyingGlass/>
@@ -25,29 +95,41 @@ export function Home(){
                     </tr>
                 </thead>
                 <tbody id='tbody'>
-                    <tr className={styles.tr}>
+                    {coins.length > 0 && coins.map((item) => (
+                        <tr className={styles.tr} key={item.id}>
                         <td className={styles.tdLabel} data-Label="Moeda">
                             <div className={styles.name}>
-                                <Link to='/'>
-                                    <span>Bitcoin</span> | BTC
+                                <img
+                                    className={styles.logo}
+                                    src={`https://assets.coincap.io/assets/icons/${item.symbol.toLocaleLowerCase()}@2x.png`}
+                                    alt="Logo Cripto" 
+                                />
+                                <Link to={`/detalhes/${item.id}`}>
+                                    <span>{item.name}</span> | {item.symbol}
                                 </Link>
                             </div>
                         </td>
                         <td className={styles.tdLabel} data-Label="Valor Mercado">
-                            1T
+                            {item.formatedMarket}
                         </td>
                         <td className={styles.tdLabel} data-Label="Preço">
-                            8.000
+                            {item.formatedPrice}
                         </td>
                         <td className={styles.tdLabel} data-Label="Volume">
-                            16B
+                            {item.formatedVolume}
                         </td>
                         <td className={styles.tdLabel} data-Label="Mudança 24h">
-                            <span>1.20</span>
+                            <span className={Number(item.changePercent24Hr) > 0 ? styles.tdProfit : styles.tdLoss}>
+                                {Number(item.changePercent24Hr).toFixed(3)}%
+                            </span>
                         </td>
                     </tr>
+                    ))}
                 </tbody>
             </table>
+            <button onClick={handleGetMore} className={styles.buttonMore}>
+                Carregar mais
+            </button>
         </main>
     )
 }

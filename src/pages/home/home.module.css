@@ -58,6 +58,24 @@ table th, table td{
 .tdLoss{
     color: #f91257;
 }
+.buttonMore{
+    padding: 8px 24px;
+    border-radius: 8px;
+}
+.name{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.logo{
+    width: 28px;
+    height: 20px;
+    transition: all 1s;
+}
+.logo:hover{
+    transform: scale(1.5);
+    z-index: 99;
+}
 
 @media screen and (max-width: 600px) {
     table{
@@ -97,5 +115,8 @@ table th, table td{
     }
     td:last-child, th:last-child{
         border-radius: 0;
+    }
+    .name{
+        margin-left: 14px;
     }
 }
