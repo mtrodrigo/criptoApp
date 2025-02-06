@@ -3,7 +3,7 @@ import { PiMagnifyingGlass } from "react-icons/pi";
 import { Link, useNavigate } from 'react-router-dom';
 import { useState, FormEvent, useEffect } from 'react';
 
-interface CoinProps{
+export interface CoinProps{
     id: string
     name: string
     symbol: string
@@ -28,13 +28,16 @@ export function Home(){
 
     const [input, setInput] = useState("")
     const [coins, setCoins] = useState<CoinProps[]>([])
+    const [offSet, setOffSet] = useState(0)
+    const [loading, setLoading] = useState(true)
     const navigate = useNavigate()
 
     useEffect(() => {
         getData()
-    },[])
+    },[offSet])
+
     async function getData() {
-        fetch("https://api.coincap.io/v2/assets?limit=10&offset=0")
+        fetch(`https://api.coincap.io/v2/assets?limit=10&offset=${offSet}`)
         .then(respose => respose.json())
         .then((data: DataProps) =>{
             const coinsData = data.data
@@ -58,19 +61,29 @@ export function Home(){
                 }
                 return formated;
             })
-            setCoins(formatedResult);
-            
+            const listCoins = [...coins, ...formatedResult]
+            setCoins(listCoins);
+            setLoading(false)
         })
     }
     const handleSubmit = (e: FormEvent) =>{
         e.preventDefault();
         if(input === "") return;
-        navigate(`/datail/${input}`)
+        navigate(`/detalhes/${input}`)
     }
     const handleGetMore = () =>{
-        alert("To aqui!!!")
+        if(offSet === 0){
+            setOffSet(10)
+            return
+        }
+        setOffSet(offSet + 10)
     }
-
+    if(loading){
+        return(
+            <div className={styles.loading}>
+                <h1>Carregando...</h1>
+            </div>
+    )}
     return(
         <main className={styles.main}>
             <form className={styles.form} onSubmit={handleSubmit}>
@@ -78,7 +91,7 @@ export function Home(){
                     type="text" 
                     placeholder='Pesquise a criptomoeda...'
                     value={input}
-                    onChange={ (e) => setInput(e.target.value)}
+                    onChange={ (e) => setInput((e.target.value).toLocaleLowerCase())}
                 />
                 <button type='submit'>
                     <PiMagnifyingGlass/>

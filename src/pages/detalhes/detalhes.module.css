@@ -1,0 +1,34 @@
+.container{
+    max-width: 300px;
+    margin: 50px auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff ;
+    border: 1px solid #FDDBB5;
+    padding: 20px;
+    background-color: #0f0f0f;
+}
+.center{
+    text-align: center;
+}
+.content{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+.content img{
+    width: 60px;
+    transition: all 1s;
+}
+.content img:hover{
+    transform: rotate(360deg);
+}
+.tdProfit{
+    color: #23f98a;
+}
+.tdLoss{
+    color: #f91257;
+}
